@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kbld.k14s.io/images: |
+      - origins:
+        - preresolved:
+            url: git.example.com/team/handbook:latest
+        url: git.example.com/team/handbook:latest
+    source-code: https://git.example.com/team/handbook
+  labels:
+    app.kubernetes.io/component: wiki
+    app.kubernetes.io/name: team-handbook
+    app.kubernetes.io/part-of: example-app
+  name: team-handbook
+  namespace: example-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: wiki
+      app.kubernetes.io/name: team-handbook
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: wiki
+        app.kubernetes.io/name: team-handbook
+    spec:
+      containers:
+      - image: git.example.com/team/handbook:latest
+        name: team-handbook
+        ports:
+        - containerPort: 8000
+          name: web
+        resources:
+          limits:
+            cpu: 50m
+            memory: 64Mi
+          requests:
+            cpu: 25m
+            memory: 32Mi
+      imagePullSecrets:
+      - name: developers-group-registry-pull-token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: wiki
+    app.kubernetes.io/name: team-handbook
+    app.kubernetes.io/part-of: example-app
+  name: team-handbook
+  namespace: example-app
+spec:
+  ports:
+  - name: web
+    port: 8000
+  selector:
+    app.kubernetes.io/component: wiki
+    app.kubernetes.io/name: team-handbook

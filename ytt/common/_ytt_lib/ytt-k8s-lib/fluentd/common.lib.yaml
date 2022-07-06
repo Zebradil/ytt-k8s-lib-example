@@ -1,0 +1,6 @@
+#@ load("@ytt:data", "data")
+
+#@ labels = {
+#@   "app.kubernetes.io/name": data.values.name,
+#@   "app.kubernetes.io/component": data.values.component,
+#@ }

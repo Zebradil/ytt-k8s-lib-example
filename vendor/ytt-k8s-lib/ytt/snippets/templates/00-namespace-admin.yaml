@@ -1,0 +1,9 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:library", "library")
+#@ load("@ytt:template", "template")
+
+#@ def config():
+namespace: #@ data.values.namespace
+#@ end
+
+--- #@ template.replace(library.get("ytt-k8s-lib/namespace-admin").with_data_values(config()).eval())

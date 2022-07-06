@@ -1,0 +1,47 @@
+#@data/values
+---
+name: celery
+component: queue
+source_code: https://github.com/zebradil/ytt-k8s-lib/-/tree/master/ytt/lib/celery
+image:
+imagePullSecrets: []
+
+worker:
+  args: []
+    #! Example args:
+    #! - celery
+    #! - --app=mshdjango
+    #! - worker
+    #! - --concurrency=1
+    #! - --hostname=worker@%n
+    #! - --loglevel=DEBUG
+  env: []
+  envFrom: []
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+scheduler:
+  enabled: yes
+  args: []
+    #! Example args:
+    #! - celery
+    #! - --app=mshdjango
+    #! - beat
+    #! - --schedule
+    #! - /tmp/celerybeat-schedule.db
+    #! - --loglevel=INFO
+  env: []
+  envFrom: []
+  resources:
+    requests:
+      cpu: 2m
+      memory: 5Mi
+    limits:
+      cpu: 10m
+      memory: 10Mi

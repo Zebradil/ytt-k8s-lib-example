@@ -1,0 +1,96 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "labels")
+
+#@ _service_name = data.values.name
+#@ _configs_cm_name = data.values.name
+#@ _data_volume_name = data.values.name + "-data"
+#@ _image = data.values.image.name + ":" + data.values.image.tag
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: #@ data.values.name
+  labels: #@ labels
+spec:
+  replicas: 1
+  selector:
+    matchLabels: #@ labels
+  serviceName: #@ _service_name
+  template:
+    metadata:
+      labels: #@ labels
+    spec:
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+      #! TODO move to the client config
+      tolerations:
+      - key: special
+        operator: Equal
+        value: stateful
+        effect: NoSchedule
+      nodeSelector:
+        special: stateful
+      containers:
+      - name: rabbitmq
+        image: #@ _image
+        env: #@ data.values.env
+        ports:
+        - name: epmd
+          containerPort: 4369
+        - name: amqp
+          containerPort: 5672
+        - name: dist
+          containerPort: 25672
+        - name: stats
+          containerPort: 15672
+        - name: metrics
+          containerPort: 15692
+        resources: #@ data.values.resources
+        livenessProbe:
+          exec:
+            command:
+            - rabbitmq-diagnostics
+            - -q
+            - check_port_connectivity
+          failureThreshold: 6
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 20
+        readinessProbe:
+          exec:
+            command:
+            - rabbitmq-diagnostics
+            - -q
+            - check_port_connectivity
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 20
+        terminationMessagePath: /opt/bitnami/rabbitmq/var/log/rabbitmq/erl_crash.dump
+        volumeMounts:
+        - mountPath: /bitnami/rabbitmq/conf
+          name: config
+        - mountPath: /bitnami/rabbitmq/mnesia
+          name: #@ _data_volume_name
+      volumes:
+      - configMap:
+          items:
+          - key: custom.conf
+            path: custom.conf
+          name: #@ _configs_cm_name
+        name: config
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: #@ _data_volume_name
+      labels: #@ labels
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: #@ data.values.storage

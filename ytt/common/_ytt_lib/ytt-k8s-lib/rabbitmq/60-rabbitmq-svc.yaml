@@ -1,0 +1,27 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "labels")
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #@ data.values.name
+  labels: #@ labels
+spec:
+  clusterIP: None
+  selector: #@ labels
+  ports:
+  - port: 4369
+    name: epmd
+    targetPort: epmd
+  - port: 5672
+    name: amqp
+    targetPort: amqp
+  - port: 25672
+    name: dist
+    targetPort: dist
+  - port: 15672
+    name: stats
+    targetPort: stats
+  - port: 15692
+    name: metrics
+    targetPort: metrics

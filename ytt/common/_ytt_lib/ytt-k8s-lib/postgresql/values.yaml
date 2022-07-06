@@ -1,0 +1,13 @@
+#@data/values
+---
+name: postgresql
+component: storage
+image:
+  name: bitnami/postgresql
+  tag: 12.4.0
+env: []
+resources: {}
+storage: 10Gi
+#! This username is used in liveness and readyness probes.
+#! Update it if you change database default username.
+probes_user: postgres

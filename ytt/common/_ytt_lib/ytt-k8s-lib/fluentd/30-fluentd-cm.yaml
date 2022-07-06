@@ -1,0 +1,11 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "labels")
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: #@ data.values.name
+  labels: #@ labels
+data:
+  output.conf: #@ data.values.config

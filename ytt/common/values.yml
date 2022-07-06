@@ -1,0 +1,4 @@
+#@data/values
+---
+namespace: example-app
+part_of: example-app

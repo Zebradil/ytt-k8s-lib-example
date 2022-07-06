@@ -1,0 +1,7 @@
+---
+
+test:
+  image: ${CI_REGISTRY}/devops/ci/toolbox:latest
+  script:
+    - cp .env.dist .env
+    - make test

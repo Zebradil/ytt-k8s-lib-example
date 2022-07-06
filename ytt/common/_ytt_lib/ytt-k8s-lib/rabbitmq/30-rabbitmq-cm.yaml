@@ -1,0 +1,19 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "labels")
+
+#@ memory_limit = data.values.memory_limit
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: #@ data.values.name
+  labels: #@ labels
+data:
+  #@yaml/text-templated-strings
+  custom.conf: |-
+    vm_memory_high_watermark.absolute = (@= memory_limit @)
+    # can result in a really excessive output produced,
+    # only suitable for environments with a relatively small
+    # number of metrics-emitting objects such as connections and queues
+    # Docs: https://www.rabbitmq.com/prometheus.html#metric-aggregation
+    prometheus.return_per_object_metrics = true

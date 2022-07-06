@@ -1,0 +1,65 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "labels")
+
+#@ _service_name = data.values.name
+#@ _configs_cm_name = data.values.name
+#@ _buffers_volume_name = data.values.name + "-data"
+#@ _image = data.values.image.name + ":" + data.values.image.tag
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: #@ data.values.name
+  labels: #@ labels
+spec:
+  replicas: 1
+  selector:
+    matchLabels: #@ labels
+  serviceName: #@ _service_name
+  template:
+    metadata:
+      labels: #@ labels
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: #@ _configs_cm_name
+        name: configs
+      containers:
+      - name: fluentd
+        image: #@ _image
+        env: #@ data.values.env
+        resources: #@ data.values.resources
+        livenessProbe:
+          httpGet:
+            path: /fluent.healthcheck?json=%7B%22log%22%3A+%22liveness+probe%22%7D
+            port: 9880
+          failureThreshold: 10
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 15
+        ports:
+        - containerPort: 24231
+          name: metrics
+        - containerPort: 9880
+          name: http
+        volumeMounts:
+        - mountPath: /fluentd/etc/config.d
+          name: configs
+        - mountPath: /fluentd/log
+          name: #@ _buffers_volume_name
+  volumeClaimTemplates:
+  - metadata:
+      name: #@ _buffers_volume_name
+      labels: #@ labels
+    spec:
+      storageClassName: faster
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: #@ data.values.buffers.storage

@@ -1,0 +1,15 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: Initial commit
+      sha: e0a12e73994319afdf4d6065b6cd1862c113f78b
+    path: ytt-k8s-lib
+  path: vendor
+- contents:
+  - git:
+      commitTitle: Initial commit
+      sha: e0a12e73994319afdf4d6065b6cd1862c113f78b
+    path: ytt-k8s-lib
+  path: ytt/common/_ytt_lib
+kind: LockConfig

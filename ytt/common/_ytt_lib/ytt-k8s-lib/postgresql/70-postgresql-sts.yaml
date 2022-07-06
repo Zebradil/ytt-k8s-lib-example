@@ -1,0 +1,91 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "labels")
+
+#@ configs_cm_name = data.values.name
+#@ data_volume_name = data.values.name + "-data"
+#@ image = data.values.image.name + ":" + data.values.image.tag
+#@ service_name = data.values.name
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: #@ data.values.name
+  labels: #@ labels
+spec:
+  replicas: 1
+  selector:
+    matchLabels: #@ labels
+  serviceName: #@ service_name
+  template:
+    metadata:
+      labels: #@ labels
+    spec:
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          #! sizeLimit is currently ignored, it's k8s bug: https://github.com/kubernetes/kubernetes/issues/63126
+          sizeLimit: 256Mi
+      #! TODO move out to user configs
+      tolerations:
+      - key: special
+        operator: Equal
+        value: stateful
+        effect: NoSchedule
+      nodeSelector:
+        special: stateful
+      containers:
+      - name: postgresql
+        image: #@ image
+        env: #@ data.values.env
+        ports:
+        - name: postgresql
+          containerPort: 5432
+        #! TODO move out to user configs
+        resources: #@ data.values.resources
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - --host
+            - localhost
+            - --username
+            - #@ data.values.probes_user
+          failureThreshold: 6
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - --host
+            - localhost
+            - --username
+            - #@ data.values.probes_user
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 3
+        volumeMounts:
+        - mountPath: /bitnami/postgresql
+          name: #@ data_volume_name
+          subPath: postgresql/12
+        - mountPath: /dev/shm
+          name: dshm
+  volumeClaimTemplates:
+  - metadata:
+      name: #@ data_volume_name
+      labels: #@ labels
+    spec:
+      storageClassName: faster
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: #@ data.values.storage

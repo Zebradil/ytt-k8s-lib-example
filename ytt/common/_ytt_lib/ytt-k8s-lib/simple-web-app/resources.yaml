@@ -1,0 +1,62 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "labels")
+
+#@ app = data.values
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: #@ app.name
+  labels: #@ labels
+  annotations:
+    source-code: #@ app.source_code
+spec:
+  replicas: #@ app.replicas
+  selector:
+    matchLabels: #@ labels
+  template:
+    metadata:
+      labels: #@ labels
+    spec:
+      imagePullSecrets: #@ app.imagePullSecrets
+      containers:
+      - name: #@ app.name
+        image: #@ app.image
+        ports:
+        - name: web
+          containerPort: #@ app.port
+        resources: #@ app.resources
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #@ app.name
+  labels: #@ labels
+spec:
+  ports:
+  - name: web
+    port: #@ app.port
+  selector: #@ labels
+#@ if app.ingress.enabled:
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: #@ app.name
+  labels: #@ labels
+  annotations:
+    cert-manager.io/cluster-issuer: #@ app.ingress.cluster_issuer
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: #@ app.ingress.host
+    http:
+      paths:
+      - backend:
+          serviceName: #@ app.name
+          servicePort: web
+  tls:
+  - hosts:
+    - #@ app.ingress.host
+    secretName: #@ app.name + "-tls"
+#@ end

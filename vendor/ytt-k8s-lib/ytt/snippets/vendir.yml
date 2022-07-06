@@ -1,0 +1,20 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+- path: vendor
+  contents:
+  - path: ytt-k8s-lib
+    git:
+      url: git@github.com:zebradil/ytt-k8s-lib.git
+      ref: origin/master
+    includePaths:
+    - ytt/snippets/**
+- path: ytt/common/_ytt_lib
+  contents:
+  - path: ytt-k8s-lib
+    git:
+      url: git@github.com:zebradil/ytt-k8s-lib.git
+      ref: origin/master
+    includePaths:
+    - ytt/lib/**
+    newRootPath: ytt/lib

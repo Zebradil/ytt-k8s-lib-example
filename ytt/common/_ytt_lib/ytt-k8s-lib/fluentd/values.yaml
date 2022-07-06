@@ -1,0 +1,37 @@
+#@data/values
+---
+name: fluentd
+component: storage
+image:
+  name: fluentd
+  tag: latest
+env: []
+resources: {}
+buffers:
+  storage: 1Gi
+config:
+#! Example fluentd output config:
+#! config: |-
+#!   <match example.*.*>
+#!     @type s3
+#!     @id out_s3
+#!     aws_key_id "#{ENV['AWS_KEY_ID']}"
+#!     aws_sec_key "#{ENV['AWS_SECRET_KEY']}"
+#!     s3_bucket "#{ENV['S3_BUCKET_NAME']}"
+#!     s3_region "#{ENV['S3_REGION_NAME']}"
+#!     s3_object_key_format %{path}_%{uuid_flush}.%{file_extension}
+#!     path youtube/${tag[1]}/${tag}
+#!     <buffer tag>
+#!         @type file
+#!         path /var/log/fluentd-buffers
+#!         chunk_limit_size 32MB
+#!         flush_thread_count 16
+#!         timekey 60
+#!         retry_forever
+#!         retry_max_interval 30
+#!     </buffer>
+#!     <format>
+#!         @type json
+#!     </format>
+#!     time_slice_format %Y%m%d%H
+#!   </match>

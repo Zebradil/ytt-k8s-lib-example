@@ -1,0 +1,24 @@
+#@data/values
+---
+name: redis
+component: cache
+image: docker.io/bitnami/redis:6.0.8-debian-10-r11
+master:
+  env: []
+  resources: {}
+  storage: 1Gi
+slave:
+  enabled: false
+  env: []
+  replicas: 1
+  resources: {}
+exporter:
+  image: oliver006/redis_exporter:latest
+  env: []
+  resources: 
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 100m
+      memory: 100Mi

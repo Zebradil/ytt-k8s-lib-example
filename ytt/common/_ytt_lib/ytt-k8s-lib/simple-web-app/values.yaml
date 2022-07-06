@@ -1,0 +1,14 @@
+#@data/values
+---
+name: simple-web-app
+component:
+source_code: https://github.com/zebradil/ytt-k8s-lib/-/tree/master/ytt/lib/simple-web-app
+ingress:
+  enabled: true
+  cluster_issuer: letsencrypt-staging
+  host: example.com
+port: 80
+image: gcr.io/google-containers/echoserver
+imagePullSecrets: []
+replicas: 1
+resources: {}

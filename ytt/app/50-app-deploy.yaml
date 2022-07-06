@@ -1,0 +1,33 @@
+#@ load("@ytt:library", "library")
+#@ load("@ytt:template", "template")
+
+#@ def config():
+name: team-handbook
+component: wiki
+source_code: https://git.example.com/team/handbook
+ingress:
+  enabled: false
+image: team-handbook
+port: 8000
+#@overlay/replace
+imagePullSecrets:
+- name: developers-group-registry-pull-token
+#@overlay/replace
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 50m
+    memory: 64Mi
+#@ end
+
+#@ handbook = library.get("ytt-k8s-lib/simple-web-app").with_data_values(config())
+--- #@ template.replace(handbook.eval())
+---
+apiVersion: kbld.k14s.io/v1alpha1
+kind: ImageOverrides
+overrides:
+- image: team-handbook
+  newImage: git.example.com/team/handbook:latest
+  preresolved: true

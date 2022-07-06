@@ -1,0 +1,13 @@
+#@data/values
+---
+name: rabbitmq
+component: queue
+image:
+  name: bitnami/rabbitmq
+  tag: 3.8.8-debian-10-r11
+env: []
+resources: {}
+#! RabbitMQ is not aware of cgroups limits and doesn't calculate vm_memory_high_watermark correctly.
+#! memory_limit should be set to the same value as resources.limits.memory
+memory_limit: 1GiB
+storage: 1Gi

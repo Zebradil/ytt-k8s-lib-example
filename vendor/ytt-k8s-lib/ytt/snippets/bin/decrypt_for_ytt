@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -euo pipefail
+
+: ${1?Specify encrypted file}
+
+cat <<-YAML
+#@data/values
+#@overlay/match-child-defaults missing_ok=True
+---
+$(sops -d $1)
+YAML

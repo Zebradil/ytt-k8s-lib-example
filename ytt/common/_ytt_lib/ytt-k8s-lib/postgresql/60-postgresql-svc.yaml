@@ -1,0 +1,15 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "labels")
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: #@ data.values.name
+  labels: #@ labels
+spec:
+  clusterIP: None
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: postgresql
+  selector: #@ labels

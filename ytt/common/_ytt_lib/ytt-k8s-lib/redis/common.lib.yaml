@@ -1,0 +1,13 @@
+#@ load("@ytt:data", "data")
+
+#@ def name(role=""):
+#@   return data.values.name + "-" + role
+#@ end
+
+#@ def labels(role=""):
+  app.kubernetes.io/name: #@ data.values.name
+  app.kubernetes.io/component: #@ data.values.component
+  #@ if role:
+  role: #@ role
+  #@ end
+#@ end

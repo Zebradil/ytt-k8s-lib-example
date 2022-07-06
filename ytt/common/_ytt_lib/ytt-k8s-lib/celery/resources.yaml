@@ -1,0 +1,36 @@
+#@ load("@ytt:data", "data")
+#@ load("common.lib.yaml", "get_labels", "get_name")
+
+#@ def resource(config, app, scheduler=False):
+#@   role = "scheduler" if scheduler else "worker"
+#@   name = get_name(role)
+#@   labels = get_labels(role)
+#@
+apiVersion: apps/v1
+kind: #@ "StatefulSet" if scheduler else "Deployment"
+metadata:
+  name: #@ name
+  labels: #@ labels
+  annotations:
+    source-code: #@ config.source_code
+spec:
+  replicas: #@ 1 if scheduler else app.replicas
+  selector:
+    matchLabels: #@ labels
+  template:
+    metadata:
+      labels: #@ labels
+    spec:
+      imagePullSecrets: #@ config.imagePullSecrets
+      containers:
+      - name: #@ name
+        image: #@ config.image
+        args: #@ app.args
+        env: #@ app.env
+        envFrom: #@ app.envFrom
+        resources: #@ app.resources
+#@ end
+
+--- #@ resource(data.values, data.values.worker)
+#@ if/end data.values.scheduler.enabled:
+--- #@ resource(data.values, data.values.scheduler, True)

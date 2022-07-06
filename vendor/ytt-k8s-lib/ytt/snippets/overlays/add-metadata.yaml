@@ -1,0 +1,27 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+
+
+#! Adds namespace and common labels to all resources
+#! ------------------------------------------------------------
+#@overlay/match by=overlay.all, when="1+"
+---
+#@overlay/match missing_ok=True
+#@overlay/match-child-defaults missing_ok=True
+metadata:
+  namespace: #@ data.values.namespace
+  labels:
+    app.kubernetes.io/part-of: #@ data.values.part_of
+
+
+#! Adds special annotation to secrets and configmaps
+#! to enable versioning when deploying with kapp.
+#! ------------------------------------------------------------
+#@ is_cm = overlay.subset({"kind":"ConfigMap"})
+#@ is_secret = overlay.subset({"kind":"Secret"})
+#@overlay/match by=overlay.or_op(is_cm, is_secret), expects="0+"
+---
+#@overlay/match-child-defaults missing_ok=True
+metadata:
+  annotations:
+    kapp.k14s.io/versioned: ""
